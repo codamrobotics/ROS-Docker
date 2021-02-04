@@ -1,0 +1,20 @@
+name: MacOS
+
+on: [pull_request, workflow_dispatch]
+#on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  macos:
+    runs-on: macos-latest
+
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Check shell compatibility for workspacing
+      run: tests/workspacing.sh
+
+    - name: Check shell compatibility for packaging
+      run: tests/packaging.sh

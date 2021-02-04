@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Spine - Spine - MCU code for robotics.
 # Copyright (C) 2019-2021 Codam Robotics
@@ -19,8 +19,26 @@
 # along with Spine.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-name=ros-docker
-version=0.1
+# bail on first error
+set -e
 
-docker build . -t $name:$version
+# setup ros environment
+source "/opt/ros/$ROS_DISTRO/setup.bash"
 
+catkin_ws=/opt/catkin_ws
+
+# setup catkin
+cd $catkin_ws/src && [ ! -f $catkin_ws/src/CMakeLists.txt ] && catkin_init_workspace || true
+
+# setup dependencies
+if [[ "$1" == "ROSDEP" ]] &&  ! rosdep check --from-paths $catkin_ws/src --ignore-src -r -y; then
+	apt update
+	rosdep update
+	rosdep install --from-paths $catkin_ws/src --ignore-src -r -y
+fi
+
+# enter workspace
+cd $catkin_ws
+
+# execute shell commands
+exec "${@:2}"
