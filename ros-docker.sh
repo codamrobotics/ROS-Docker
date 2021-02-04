@@ -35,29 +35,71 @@ function realpath() {
 	echo "$REALPATH"
 }
 
+basedir=$(realpath $(dirname "$0"))
+lib=$basedir/lib
+
 # assume current working directory if no argument is specified
 if [ $# -eq 0 ]; then
-	lpath=$PWD
+	lpath=$(realpath $PWD)
+	project=$(echo $(realpath $PWD) | rev | cut -f1 -d/ | rev)
 	cmd='exit'
 # first argument is the target directory
 elif [ $# -eq 1 ] && [ -d $1 ] ; then
 	lpath=$(realpath $1)
+	project=$(echo $(realpath $1) | rev | cut -f1 -d/ | rev)
 	cmd='exit'
-# second argument is a bash command
-elif [ $# -gt 1 ] && [ -d $1 ] ; then
+# first argument is clean
+elif [ $# -eq 1 ] && [ "$1" == "clean" ] ; then
+	lpath=$(realpath $PWD)
+	cmd='exit'
+# first argument is clean and second argument is target directory
+elif [ $# -eq 2 ] && [ "$1" == "clean" ] && [ -d $2 ]; then
+	lpath=$(realpath $2)
+	cmd='exit'
+# first argument is clean, second argument is target directory, third+ is bash command
+elif [ $# -gt 2 ] && [ "$1" == "clean" ] && [ -d $2 ]; then
+	lpath=$(realpath $2)
+	cmd="${@:3}"
+# first argument is clean, second+ is bash command
+elif [ $# -gt 1 ] && [ "$1" == "clean" ]; then
+	lpath=$(realpath $PWD)
+	cmd="${@:2}"
+# second+ argument is a bash command
+elif [ $# -gt 1 ] && [ -d $1 ]; then
 	lpath=$(realpath $1)
+	project=$(echo $(realpath $1) | rev | cut -f1 -d/ | rev)
 	cmd="${@:2}"
 else
 	cat<<-EOF
 	$0 usage:
-	   $0                                 -> compiles current directory, exits on completion
-	   $0 [target folder]                 -> compiles [target folder], exits on completion
-	   $0 [target folder] [shell command] -> compiles [target folder], runs [shell command] on completion
+
+	   With pre-installed ros dependencies:
+	   $0                                       -> compiles current directory, exits on completion
+	   $0 [target folder]                       -> compiles [target folder], exits on completion
+	   $0 [target folder] [shell command]       -> compiles [target folder], runs [shell command] on completion
+
+	   Without pre-installed ros dependencies:
+	   $0 clean                                 -> compiles current directory, exits on completion
+	   $0 clean [target folder]                 -> compiles [target folder], exits on completion
+	   $0 clean [target folder] [shell command] -> compiles [target folder], runs [shell command] on completion
+
+	   $0 help                                  -> will display these fine words of help
 	examples:
-	   $0 ~/Projects/Spine--ROS-Messages bash -> will attempt compilation of ~/Projects/Spine--ROS-Messages and run drop you in shell afterwards
+	   $0 ~/Projects/Spine--ROS-Messages bash   -> build with deps and will attempt compilation of ~/Projects/[project] and run drop you in shell afterwards
+	   $0 clean ~/Projects/[project] bash       -> build clean ros-core and will attempt compilation of ~/Projects/[project] and run drop you in shell afterwards
 	EOF
 	exit 1
 fi
 
+version=0.1
 catkin_ws=/opt/catkin_ws
-docker run -it --rm --init -v "$lpath:/src" ros-docker:0.1 sh -c "cd $catkin_ws/src/build; $cmd"
+if [ ! -z "$project" ]; then
+	# build & run for
+	$lib/ros-docker-build.sh $lpath \
+	&& docker run -it --rm --init -v "$lpath:/src" ros-docker-$project:$version sh -c "cd $catkin_ws/src/build; $cmd"
+else
+	# build & run clean
+	$lib/ros-docker-build.sh \
+	&& docker run -it --rm --init -v "$lpath:/src" ros-docker-clean:$version sh -c "cd $catkin_ws/src/build; $cmd"
+fi
+

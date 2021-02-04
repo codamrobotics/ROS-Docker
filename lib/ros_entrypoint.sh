@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Spine - Spine - MCU code for robotics.
 # Copyright (C) 2019-2021 Codam Robotics
@@ -18,9 +18,41 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with Spine.  If not, see <http://www.gnu.org/licenses/>.
 #
+set -e
 
-name=ros-docker
-version=0.1
+# setup ros environment
+source "/opt/ros/$ROS_DISTRO/setup.bash"
 
-docker build . -t $name:$version
+catkin_ws=/opt/catkin_ws
+src=/src
 
+## copy over src files
+#size=$(du -bs $src | cut -f1)
+#if [ $size -gt 1000000000 ]; then
+#	echo "Target directory is bigger than 1000M! Aborting."
+#	exit 1
+#fi
+#
+#cp -r $src $catkin_ws/src/build
+
+ln -s $src $catkin_ws/src/build
+
+# setup catkin
+cd $catkin_ws/src && catkin_init_workspace
+
+# setup dependencies
+if ! rosdep check --from-paths $catkin_ws/src --ignore-src -r -y; then
+	apt update
+	rosdep update
+	rosdep install --from-paths $catkin_ws/src --ignore-src -r -y
+fi
+
+# make catkin_ws
+cd $catkin_ws && catkin_make
+
+#only execute shell if there is a failure
+if [ ! $? -eq 0 ]; then
+	exec "bash"
+else
+	exec "$@"
+fi
