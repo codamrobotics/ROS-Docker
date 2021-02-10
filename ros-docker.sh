@@ -131,7 +131,6 @@ read_input() {
 					break;
 				else
 					usage
-					exit 1
 				fi
 			shift; ;;
 		esac
