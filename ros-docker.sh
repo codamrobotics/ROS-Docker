@@ -90,15 +90,16 @@ usage() {
 	usage:
 	$0 [options] package [package directory] [shell command] -> for single package
 	$0 [options] workspace [catkin_ws directory] [shell command] -> for entire workspace
-	$0 help -> will display these very words
 	options:
-	         -c, --clean  -> do a clean build (no preinstalled rosdeps)
+	         -h, --help -> will display these very words
+	         -c, --clean -> do a clean build (no preinstalled rosdeps)
 	         -r, --rosdep -> install rosdependency before execution of commands
+	         -R, --rebuild -> force rebuilding of Docker image
 	         -d, --dryrun -> do a dryrun (show commands that would be executed)
 	         -D, --debug -> internal debugging -> stop on first error
 	examples:
-	$0 (-c) (-r) (-d) package /opt/catkin_ws/src/[package dir] [command]
-	$0 (-c) (-r) (-d) workspace /opt/catkin_ws [command]
+	$0 (-c) (-r) (-d) (-R) package /opt/catkin_ws/src/[package dir] [command]
+	$0 (-c) (-r) (-d) (-R) workspace /opt/catkin_ws [command]
 	EOF
 } # End of usage()
 
@@ -118,6 +119,7 @@ read_input() {
 			-h|--help)		usage;				exit 1; ;;
 			-c|--clean)		FLAVOUR=CLEAN;		shift; ;;
 			-r|--rosdep)	ROSDEP=ROSDEP;		shift; ;;
+			-R|--rebuild)	FORCE_REBUILD=TRUE; shift; ;;
 			-d|--dryrun)	DRYRUN=TRUE;		shift; ;;
 			-D|--debug)		DEBUG=TRUE; set -e;	shift; ;;
 			package)		TARGET=PACKAGE;		shift; ;;
@@ -145,6 +147,10 @@ read_input() {
 
 dryrun() {
 	echo -e "${COLOR_YELLOW}DRYRUN${COLOR_NC} @ $@"
+} # End of drurun()
+
+notify() {
+	echo -e "${COLOR_GREEN}STATUS${COLOR_NC} @ $@"
 } # End of drurun()
 
 #
@@ -181,7 +187,11 @@ build() {
 	echo "Docker building image \"$IMAGE:$IMAGE_VERSION\"..."
 	local _op="docker build $BASEDIR -t $IMAGE:$IMAGE_VERSION"
 	if [ -z ${DRYRUN+x} ]; then
-		eval "$_op" || exit 1
+		if [ ! -z ${FORCE_REBUILD} ] || [[ "$(docker images -q $IMAGE:$IMAGE_VERSION 2>/dev/null)" == "" ]]; then
+			eval "$_op" || exit 1
+		else
+			notify $LINENO: "Image $IMAGE:$IMAGE_VERSION already exists. Continuing.."
+		fi
 	else
 		dryrun $LINENO: "$_op"
 	fi
