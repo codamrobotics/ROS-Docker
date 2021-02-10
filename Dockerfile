@@ -39,13 +39,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN mkdir -p /opt/catkin_ws/src
 
 # setup rosdep
-RUN rosdep init && rosdep update
+RUN rosdep init # && rosdep update
 
 # install ros dependencies if required
-COPY build_staging* /opt/catkin_ws/src/target_project
+COPY build_staging* /opt/catkin_ws/src/target
 
 RUN if [ ! -z "$(ls -A /opt/catkin_ws/src)" ]; then \
-	apt update \
+	find /opt/catkin_ws/src  -type d \( -name "build" -o -name "devel" -o -name "install" \) -print0 | xargs -r0 -- rm -r \
+	&& apt update \
+	&& rosdep update \
 	&& rosdep install --from-paths /opt/catkin_ws/src --ignore-src -r -y \
 	&& rm -rf /opt/catkin_ws/src/* \
     && rm -rf /var/lib/apt/lists/*; \
