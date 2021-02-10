@@ -1,22 +1,29 @@
 # ROS-Docker
+[![linux](https://github.com/autonomousrobotshq/ROS-Docker/workflows/Linux/badge.svg)](https://github.com/autonomousrobotshq/ROS-Docker/actions?workflow=Linux)
+[![macos](https://github.com/autonomousrobotshq/ROS-Docker/workflows/MacOS/badge.svg)](https://github.com/autonomousrobotshq/ROS-Docker/actions?workflow=MacOS)
 
-### Usage
+### Quickstart
 
 run:
 
     ros-docker.sh help
 
-to display options.
+to display options the following options:
 
-* images will be built automaticly before entering into container
+    ./ros-docker.sh - Develop and test ROS in Docker
+    usage:
+    ./ros-docker.sh [options] package [package directory] [shell command] -> for single package
+    ./ros-docker.sh [options] workspace [catkin_ws directory] [shell command] -> for entire workspace
+    ./ros-docker.sh help -> will display these very words
+    options:
+             -c, --clean  -> do a clean build (no preinstalled rosdeps)
+             -r, --rosdep -> install rosdependency before execution of commands
+             -d, --dryrun -> do a dryrun (show commands that would be executed)
+             -D, --debug -> internal debugging -> stop on first error
+    examples:
+    ./ros-docker.sh (-c) (-r) (-d) package /opt/catkin_ws/src/[package dir] [command]
+    ./ros-docker.sh (-c) (-r) (-d) workspace /opt/catkin_ws [command
 
-### Current Features
+### Features
 
-* ros-docker.sh [no clean] will take your project folder (or current folder) and install all ros dependencies listed in the package CmakeLists.txt (good for debugging)
-* ros-docker.sh clean will built clean image and install dependencies on starting the container (good for testing entire package)
-
-### Planned Features
-
-* option to enter to container and work from there
-
-Better documentation will follow soon!
+* images will be build automaticly before entering into container
