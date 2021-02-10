@@ -45,19 +45,19 @@ realpath() {
 
 ## environment variables
 # 
-basedir=$(realpath "$(dirname "$0")")
-lib=$basedir/lib
-build_tmp=$lib/build_tmp
+BASEDIR=$(realpath "$(dirname "$0")")
+STAGING=$BASEDIR/build_staging
+LIB=$BASEDIR/lib
 
 ## includes
 #
-source $lib/colours.sh
+source $LIB/colours.sh
 
 ## setup clean up traps 
 #
 clean_up()
 {
-    [  -d "$build_tmp" ] && rm -rf "$build_tmp"
+    [  -d "$STAGING" ] && rm -rf "$STAGING"
 }
 
 trap "clean_up INT" INT
@@ -155,7 +155,7 @@ build() {
 	local catkin_ws=/opt/catkin_ws
 
 	# setup empty stub folder
-	mkdir $build_tmp
+	mkdir $STAGING
 
 	case ${FLAVOUR} in
 		CLEAN)
@@ -165,7 +165,7 @@ build() {
 			local project="$(echo $LPATH | rev | cut -f1 -d/ | rev | sanitize)"
 
 			# copy over files from project to temporarily insert into docker container for rosdep
-			local _op="cp -a $LPATH $build_tmp/"
+			local _op="cp -a $LPATH $STAGING/"
 			if [ -z "${DRYRUN+x}" ]; then
 				eval "$_op" || exit 1
 			else
@@ -179,7 +179,7 @@ build() {
 	IMAGE_VERSION=0.1
 
 	echo "Docker building image \"$IMAGE:$IMAGE_VERSION\"..."
-	local _op="docker build $lib -t $IMAGE:$IMAGE_VERSION"
+	local _op="docker build $BASEDIR -t $IMAGE:$IMAGE_VERSION"
 	if [ -z ${DRYRUN+x} ]; then
 		eval "$_op" || exit 1
 	else
@@ -210,7 +210,15 @@ run() {
 	assert '[ ! -z ${ROSDEP+x} ]' $LINENO
 
 	echo "Docker shadowing image \"$IMAGE:$IMAGE_VERSION\"..."
-	local _op="docker run -it --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_VERSION $ROSDEP sh -c "$CMD""
+	#if [[ $- == *i* ]]; then
+	if [ -t 0 ]; then
+		# running interactively
+		local _op="docker run -it --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_VERSION $ROSDEP sh -c "$CMD""
+	else
+		# running headless
+		local _op="docker run --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_VERSION $ROSDEP sh -c "$CMD""
+	fi
+
 	if [ -z ${DRYRUN+x} ]; then
 		eval "$_op" || exit 
 	else
