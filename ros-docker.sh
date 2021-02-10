@@ -144,7 +144,7 @@ read_input() {
 } # End of read_input()
 
 dryrun() {
-	echo -e "${COLOR_YELLOW}DRYRUN${COLOR_NC} @ $LINENO : $@"
+	echo -e "${COLOR_YELLOW}DRYRUN${COLOR_NC} @ $@"
 } # End of drurun()
 
 #
