@@ -8,7 +8,7 @@ run:
 
     ros-docker.sh help
 
-to display options the following options:
+to display the following options:
 
     ./ros-docker.sh - Develop and test ROS in Docker
     usage:
