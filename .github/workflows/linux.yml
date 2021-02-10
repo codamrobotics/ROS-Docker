@@ -1,0 +1,28 @@
+name: Linux
+
+on: [pull_request, workflow_dispatch]
+#on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Check shell compatibility for workspacing
+      run: |
+          ./ros-docker.sh workspace --dryrun /home bash
+          ./ros-docker.sh workspace --dryrun -c /home bash
+          ./ros-docker.sh workspace --dryrun -r /home bash
+          ./ros-docker.sh workspace --dryrun -c -r /home bash
+
+    - name: Check shell compatibility for packaging
+      run: |
+          ./ros-docker.sh package --dryrun /home bash
+          ./ros-docker.sh package --dryrun -c /home bash
+          ./ros-docker.sh package --dryrun -r /home bash
+          ./ros-docker.sh package --dryrun -c -r /home bash
