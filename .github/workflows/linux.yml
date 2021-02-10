@@ -14,15 +14,7 @@ jobs:
         submodules: recursive
 
     - name: Check shell compatibility for workspacing
-      run: |
-           ./ros-docker.sh workspace --dryrun /tmp bash
-           ./ros-docker.sh workspace --dryrun -c /tmp bash
-           ./ros-docker.sh workspace --dryrun -r /tmp bash
-           ./ros-docker.sh workspace --dryrun -c -r /tmp bash
+      run: tests/workspacing.sh
 
     - name: Check shell compatibility for packaging
-      run: |
-           ./ros-docker.sh package --dryrun /tmp bash
-           ./ros-docker.sh package --dryrun -c /tmp bash
-           ./ros-docker.sh package --dryrun -r /tmp bash
-           ./ros-docker.sh package --dryrun -c -r /home bash
+      run: tests/packaging.sh
