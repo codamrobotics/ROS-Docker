@@ -116,12 +116,12 @@ read_input() {
 	while [ $# -gt 0 ]; do
 		case "$1" in
 			-h|--help)		usage;				exit 1; ;;
-			-c|--clean)		FLAVOUR=CLEAN		shift; ;;
-			-r|--rosdep)	ROSDEP=ROSDEP		shift; ;;
-			-d|--dryrun)	DRYRUN=TRUE			shift; ;;
+			-c|--clean)		FLAVOUR=CLEAN;		shift; ;;
+			-r|--rosdep)	ROSDEP=ROSDEP;		shift; ;;
+			-d|--dryrun)	DRYRUN=TRUE;		shift; ;;
 			-D|--debug)		DEBUG=TRUE; set -e;	shift; ;;
-			package)		TARGET=PACKAGE		shift; ;;
-			workspace)		TARGET=WORKSPACE	shift; ;;
+			package)		TARGET=PACKAGE;		shift; ;;
+			workspace)		TARGET=WORKSPACE;	shift; ;;
 			*)
 				# read directory or command
 				if [ -d $1 ]; then
@@ -131,6 +131,7 @@ read_input() {
 					break;
 				else
 					usage
+					exit 1
 				fi
 			shift; ;;
 		esac
@@ -159,7 +160,7 @@ build() {
 	case ${FLAVOUR} in
 		CLEAN)
 			local project="clean"
-		break; ;;
+		;;
 		TARGETED)
 			local project="$(echo $LPATH | rev | cut -f1 -d/ | rev | sanitize)"
 
@@ -170,7 +171,7 @@ build() {
 			else
 				dryrun $LINENO: "$_op"
 			fi
-		break; ;;
+		 ;;
 	esac
 	
 	assert '[ ! -z ${project+x} ]' $LINENO
@@ -195,10 +196,10 @@ run() {
 	case ${TARGET} in
 		PACKAGE)
 			RPATH="$catkin_ws/src/$(echo $LPATH | rev | cut -f1 -d/ | rev)"
-			break; ;;
+			;;
 		WORKSPACE)
 			RPATH="$catkin_ws"
-			break; ;;
+			;;
 	esac
 	
 	assert '[ ! -z ${LPATH+x} ]' $LINENO
