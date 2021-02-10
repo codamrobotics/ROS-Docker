@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Spine - Spine - MCU code for robotics.
 # Copyright (C) 2019-2021 Codam Robotics
