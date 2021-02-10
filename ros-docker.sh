@@ -25,6 +25,24 @@
 # Checkout the README.md or run 'ros-docker.sh help' to figure out how to get started
 #
 
+## Core dependency: Returns absolute path of a folder
+# source: http://stackoverflow.com/a/18443300/441757
+realpath() {
+	OURPWD=$PWD
+	cd "$(dirname "$1")"
+	LINK=$(readlink "$(basename "$1")")
+	while [ "$LINK" ]; do
+	  cd "$(dirname "$LINK")"
+	  LINK=$(readlink "$(basename "$1")")
+	done
+	REALPATH="$PWD/$(basename "$1")"
+	[ "${REALPATH: -1}" = "." ] && [ ! ${#REALPATH} -eq 1 ] && REALPATH=$(echo $REALPATH | sed 's/.$//')
+	[ "${REALPATH: -1}" = "/" ] && [ ! ${#REALPATH} -eq 1 ] && REALPATH=$(echo $REALPATH | sed 's/\/$//')
+	cd "$OURPWD"
+	echo "$REALPATH"
+} # End of realpath()
+
+
 ## environment variables
 # 
 basedir=$(realpath "$(dirname "$0")")
@@ -62,24 +80,6 @@ assert() {
 	[ $# -lt 2 ] && { echo "assert called without condition + linenumber!"; exit 1; }
 	(eval "$1" &>/dev/null) || { echo -e "${COLOR_RED}assertion failed!${COLOR_NC} : $@"; usage; exit 1; }
 }
-
-#
-## Returns absolute path of a folder
-# source: http://stackoverflow.com/a/18443300/441757
-realpath() {
-	OURPWD=$PWD
-	cd "$(dirname "$1")"
-	LINK=$(readlink "$(basename "$1")")
-	while [ "$LINK" ]; do
-	  cd "$(dirname "$LINK")"
-	  LINK=$(readlink "$(basename "$1")")
-	done
-	REALPATH="$PWD/$(basename "$1")"
-	[ "${REALPATH: -1}" = "." ] && [ ! ${#REALPATH} -eq 1 ] && REALPATH=$(echo $REALPATH | sed 's/.$//')
-	[ "${REALPATH: -1}" = "/" ] && [ ! ${#REALPATH} -eq 1 ] && REALPATH=$(echo $REALPATH | sed 's/\/$//')
-	cd "$OURPWD"
-	echo "$REALPATH"
-} # End of realpath()
 
 #
 ## Display usage options
