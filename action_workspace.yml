@@ -1,5 +1,4 @@
 name: Build
-description: Build and compile ROS catkin workspace
 
 on: [pull_request, workflow_dispatch]
 
