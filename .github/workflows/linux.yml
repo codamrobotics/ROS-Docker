@@ -15,14 +15,14 @@ jobs:
 
     - name: Check shell compatibility for workspacing
       run: |
-          bash ./ros-docker.sh workspace --dryrun /tmp bash
-          bash ./ros-docker.sh workspace --dryrun -c /tmp bash
-          bash ./ros-docker.sh workspace --dryrun -r /tmp bash
-          bash ./ros-docker.sh workspace --dryrun -c -r /tmp bash
+           ./ros-docker.sh workspace --dryrun /tmp bash
+           ./ros-docker.sh workspace --dryrun -c /tmp bash
+           ./ros-docker.sh workspace --dryrun -r /tmp bash
+           ./ros-docker.sh workspace --dryrun -c -r /tmp bash
 
     - name: Check shell compatibility for packaging
       run: |
-          bash ./ros-docker.sh package --dryrun /tmp bash
-          bash ./ros-docker.sh package --dryrun -c /tmp bash
-          bash ./ros-docker.sh package --dryrun -r /tmp bash
-          bash ./ros-docker.sh package --dryrun -c -r /home bash
+           ./ros-docker.sh package --dryrun /tmp bash
+           ./ros-docker.sh package --dryrun -c /tmp bash
+           ./ros-docker.sh package --dryrun -r /tmp bash
+           ./ros-docker.sh package --dryrun -c -r /home bash
