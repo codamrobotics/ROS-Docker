@@ -42,7 +42,7 @@ RUN mkdir -p /opt/catkin_ws/src
 RUN rosdep init && rosdep update
 
 # install ros dependencies if required
-COPY build_tmp* /opt/catkin_ws/src/target_project
+COPY build_staging* /opt/catkin_ws/src/target_project
 
 RUN if [ ! -z "$(ls -A /opt/catkin_ws/src)" ]; then \
 	apt update \
@@ -52,7 +52,7 @@ RUN if [ ! -z "$(ls -A /opt/catkin_ws/src)" ]; then \
 fi
 
 # setup entrypoint
-COPY ./ros_entrypoint.sh /
+COPY ./entrypoint.sh /
 
-ENTRYPOINT ["/ros_entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["bash"]
