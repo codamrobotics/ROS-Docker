@@ -1,0 +1,23 @@
+name: Build
+
+on: [pull_request, workflow_dispatch]
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Checkout ROS-Docker
+      uses: actions/checkout@v2
+      with:
+        repository: autonomousrobotshq/ROS-Docker
+        path: './ROS-Docker'
+        submodules: recursive
+
+    - name: Build a clean ROS environment and attempt compilation of workspace
+      run: ./ROS-Docker/ros-docker.sh -r -c workspace ./ catkin_make
