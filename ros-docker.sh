@@ -165,7 +165,12 @@ build() {
 			local project="$(echo $LPATH | rev | cut -f1 -d/ | rev | sanitize)"
 
 			# copy over files from project to temporarily insert into docker container for rosdep
-			cp -r $LPATH $build_tmp/
+			local _op="cp -r $LPATH $build_tmp/"
+			if [ -z "${DRYRUN+x}" ]; then
+				eval "$_op" || exit 1
+			else
+				dryrun $LINENO: "$_op"
+			fi
 		break; ;;
 	esac
 	
