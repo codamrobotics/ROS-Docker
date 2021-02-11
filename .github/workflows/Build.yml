@@ -1,0 +1,34 @@
+name: Build
+
+on: [pull_request, workflow_dispatch]
+#on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository and submodules
+      uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Build a clean image for workspace
+      run: |
+           [ -d empty_dir] && rm -rf empty_dir; mkdir -p empty_dir/src
+           ./ros-docker.sh --clean workspace empty_dir catkin_make
+
+    - name: Build a clean image for package
+      run: |
+           [ -d empty_dir] && rm -rf empty_dir; mkdir -p empty_dir
+           ./ros-docker.sh --clean package empty_dir catkin_make
+
+    - name: Build a targeted image for workspace
+      run: |
+           [ -d empty_dir] && rm -rf empty_dir; mkdir -p empty_dir/src
+           ./ros-docker.sh --rosdep --rebuild workspace empty_dir catkin_make
+
+    - name: Build a targeted image for package
+      run: |
+           [ -d empty_dir] && rm -rf empty_dir; mkdir -p empty_dir
+           ./ros-docker.sh --rosdep package empty_dir catkin_make

@@ -13,28 +13,11 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Check shell compatibility for basic options
+      run: tests/options.sh
+
     - name: Check shell compatibility for workspacing
       run: tests/workspacing.sh
 
     - name: Check shell compatibility for packaging
       run: tests/packaging.sh
-
-    - name: Build a clean image for workspace
-      run: |
-           [ -d empty_dir] && rm -rf empty_dir; mkdir -p empty_dir/src
-           ./ros-docker.sh --clean workspace empty_dir catkin_make
-
-    - name: Build a clean image for package
-      run: |
-           [ -d empty_dir] && rm -rf empty_dir; mkdir -p empty_dir
-           ./ros-docker.sh --clean package empty_dir catkin_make
-
-    - name: Build a targeted image for workspace
-      run: |
-           [ -d empty_dir] && rm -rf empty_dir; mkdir -p empty_dir/src
-           ./ros-docker.sh --rosdep --rebuild workspace empty_dir catkin_make
-
-    - name: Build a targeted image for package
-      run: |
-           [ -d empty_dir] && rm -rf empty_dir; mkdir -p empty_dir
-           ./ros-docker.sh --rosdep package empty_dir catkin_make
