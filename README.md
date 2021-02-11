@@ -34,6 +34,10 @@ a good idea is to add this alias to your .zshrc or .bashrc:
 
 	alias ros='~/[path to ROS-Docker/ros-docker.sh'
 
+or run:
+
+    ./ros-docker.sh --install
+
 ### Github Actions
 
 To use this repository to run tests on your ROS package or ROS catkin workspace:
