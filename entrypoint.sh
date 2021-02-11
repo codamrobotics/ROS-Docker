@@ -23,6 +23,7 @@
 set -e
 
 # setup ros environment
+# shellcheck source=lib/opt/ros/$ROS_DISTRO/setup.bash
 source "/opt/ros/$ROS_DISTRO/setup.bash"
 
 catkin_ws=/opt/catkin_ws
