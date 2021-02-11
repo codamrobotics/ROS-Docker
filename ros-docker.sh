@@ -36,8 +36,8 @@ realpath() {
 	  LINK=$(readlink "$(basename "$1")")
 	done
 	REALPATH="$PWD/$(basename "$1")"
-	[ "${REALPATH: -1}" = "." ] && [ ! ${#REALPATH} -eq 1 ] && REALPATH=$(echo $REALPATH | sed 's/.$//')
-	[ "${REALPATH: -1}" = "/" ] && [ ! ${#REALPATH} -eq 1 ] && REALPATH=$(echo $REALPATH | sed 's/\/$//')
+	[ "${REALPATH: -1}" = "." ] && [ ! ${#REALPATH} -eq 1 ] && REALPATH=$(echo "$REALPATH" | sed 's/.$//')
+	[ "${REALPATH: -1}" = "/" ] && [ ! ${#REALPATH} -eq 1 ] && REALPATH=$(echo "$REALPATH" | sed 's/\/$//')
 	cd "$OURPWD"
 	echo "$REALPATH"
 } # End of realpath()
@@ -45,14 +45,15 @@ realpath() {
 
 ## environment variables
 #
-THIS=$(realpath $0)
-BASEDIR=$(realpath "$(dirname "$0")")
-STAGING=$BASEDIR/build_staging
-LIB=$BASEDIR/lib
+THIS="$(realpath $0)"
+BASEDIR="$(realpath "$(dirname "$0")")"
+STAGING="$BASEDIR/build_staging"
+LIB="$BASEDIR/lib"
 
 ## includes
 #
-source $LIB/colours.sh
+# shellcheck source=lib/colours.sh
+source "$LIB"/colours.sh
 
 ## setup clean up traps 
 #
@@ -70,7 +71,7 @@ trap "clean_up EXIT" EXIT
 # Sna-ke becomes sna_ke
 # reads from stdin or arguments list
 sanitize() {
-	[ $# -eq 0 ] && read input || input="$@"
+	[ $# -eq 0 ] && read input || input="$*"
 	echo $input | sed 's/-/_/g' | tr -dc '[:alnum:]_\n\r' | tr '[:upper:]' '[:lower:]'
 } # End of sanitize()
 
@@ -79,7 +80,7 @@ sanitize() {
 #
 assert() {
 	[ $# -lt 2 ] && { echo "assert called without condition + linenumber!"; exit 1; }
-	(eval "$1" &>/dev/null) || { echo -e "${COLOR_RED}assertion failed!${COLOR_NC} : $@"; usage; exit 1; }
+	(eval "$1" &>/dev/null) || { echo -e "${COLOR_RED}assertion failed!${COLOR_NC} : $*"; usage; exit 1; }
 }
 
 #
@@ -88,7 +89,7 @@ assert() {
 install() {
 	local alias="alias ros='$THIS'"
 	local rcs=("$HOME/.zshrc" "$HOME/.bashrc" )
-	for rc in ${rcs[@]}; do
+	for rc in "${rcs[@]}"; do
 		rc=$(realpath $rc)
 		local _op="echo $alias >> $rc"
 		[ -f $rc ] && [[ "$(grep -e '^alias ros=' $rc )" == "" ]] && { [ -z "${DRYRUN+x}" ] && eval "$_op" || dryrun @ $LINENO: "$_op"; }
@@ -132,14 +133,14 @@ read_input() {
 	while [ $# -gt 0 ]; do
 		case "$1" in
 			-h|--help)		usage;				exit 0; ;;
-			-i|--install)	TARGET=install;		shift; ;;
-			-c|--clean)		FLAVOUR=CLEAN;		shift; ;;
-			-r|--rosdep)	ROSDEP=ROSDEP;		shift; ;;
-			-b|--rebuild)	FORCE_REBUILD=TRUE; shift; ;;
-			-d|--dryrun)	DRYRUN=TRUE;		shift; ;;
-			-D|--debug)		DEBUG=TRUE; set -e;	shift; ;;
-			package)		TARGET=PACKAGE;		shift; ;;
-			workspace)		TARGET=WORKSPACE;	shift; ;;
+			-i|--install)	export TARGET=install;		shift; ;;
+			-c|--clean)		export FLAVOUR=CLEAN;		shift; ;;
+			-r|--rosdep)	export ROSDEP=ROSDEP;		shift; ;;
+			-b|--rebuild)	export FORCE_REBUILD=TRUE; shift; ;;
+			-d|--dryrun)	export DRYRUN=TRUE;		shift; ;;
+			-D|--debug)		export DEBUG=TRUE; set -e;	shift; ;;
+			package)		export TARGET=PACKAGE;		shift; ;;
+			workspace)		export TARGET=WORKSPACE;	shift; ;;
 			*)
 				# read directory or command
 				if [ -d $1 ]; then
@@ -164,18 +165,17 @@ read_input() {
 } # End of read_input()
 
 dryrun() {
-	echo -e "${COLOR_YELLOW}DRYRUN${COLOR_NC} @ $@"
+	echo -e "${COLOR_YELLOW}DRYRUN${COLOR_NC} @ $*"
 } # End of drurun()
 
 notify() {
-	echo -e "${COLOR_GREEN}STATUS${COLOR_NC} @ $@"
+	echo -e "${COLOR_GREEN}STATUS${COLOR_NC} @ $*"
 } # End of drurun()
 
 #
 ## Build the Docker image
 #
 build() {
-	local version=0.1
 	local catkin_ws=/opt/catkin_ws
 
 	# setup empty stub folder
@@ -186,7 +186,8 @@ build() {
 			local project="clean"
 		;;
 		TARGETED)
-			local project="$(echo $LPATH | rev | cut -f1 -d/ | rev | sanitize)"
+			local project;
+			project="$(sanitize "$(echo "$LPATH" | rev | cut -f1 -d/ | rev)")"
 
 			# copy over files from project to temporarily insert into docker container for rosdep
 			local _op="cp -a $LPATH $STAGING/"
@@ -241,10 +242,10 @@ run() {
 	#if [[ $- == *i* ]]; then
 	if [ -t 0 ]; then
 		# running interactively
-		local _op="docker run -it --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_VERSION $ROSDEP sh -c "$CMD""
+		local _op="docker run -it --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_VERSION $ROSDEP sh -c $CMD"
 	else
 		# running headless
-		local _op="docker run --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_VERSION $ROSDEP sh -c "$CMD""
+		local _op="docker run --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_VERSION $ROSDEP sh -c $CMD"
 	fi
 
 	if [ -z ${DRYRUN+x} ]; then

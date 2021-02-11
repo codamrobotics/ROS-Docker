@@ -2,6 +2,7 @@
 [![build](https://github.com/autonomousrobotshq/ROS-Docker/workflows/Build/badge.svg)](https://github.com/autonomousrobotshq/ROS-Docker/actions?workflow=Build)
 [![linux](https://github.com/autonomousrobotshq/ROS-Docker/workflows/Linux/badge.svg)](https://github.com/autonomousrobotshq/ROS-Docker/actions?workflow=Linux)
 [![macos](https://github.com/autonomousrobotshq/ROS-Docker/workflows/MacOS/badge.svg)](https://github.com/autonomousrobotshq/ROS-Docker/actions?workflow=MacOS)
+[![posix](https://github.com/autonomousrobotshq/ROS-Docker/workflows/Posix/badge.svg)](https://github.com/autonomousrobotshq/ROS-Docker/actions?workflow=Posix)
 ## Develop and test ROS in a Docker container
 
 ### Quickstart
