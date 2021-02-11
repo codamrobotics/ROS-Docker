@@ -44,7 +44,8 @@ realpath() {
 
 
 ## environment variables
-# 
+#
+THIS=$(realpath $0)
 BASEDIR=$(realpath "$(dirname "$0")")
 STAGING=$BASEDIR/build_staging
 LIB=$BASEDIR/lib
@@ -82,6 +83,19 @@ assert() {
 }
 
 #
+## install bindings
+#
+install() {
+	local alias="alias ros='$THIS'"
+	local rcs=("$HOME/.zshrc" "$HOME/.bashrc" )
+	for rc in ${rcs[@]}; do
+		rc=$(realpath $rc)
+		local _op="echo $alias >> $rc"
+		[ -f $rc ] && [[ "$(grep -e '^alias ros=' $rc )" == "" ]] && { [ -z "${DRYRUN+x}" ] && eval "$_op" || dryrun @ $LINENO: "$_op"; }
+	done
+} # end of install
+
+#
 ## Display usage options
 #
 usage() {
@@ -92,14 +106,15 @@ usage() {
 	$0 [options] workspace [catkin_ws directory] [shell command] -> for entire workspace
 	options:
 	         -h, --help -> will display these very words
+	         -i, --install -> will add alias 'ros' to ~/.bashrc and ~/.zshrc
 	         -c, --clean -> do a clean build (no preinstalled rosdeps)
 	         -r, --rosdep -> install rosdependency before execution of commands
-	         -R, --rebuild -> force rebuilding of Docker image
+	         -b, --rebuild -> force rebuilding of Docker image
 	         -d, --dryrun -> do a dryrun (show commands that would be executed)
 	         -D, --debug -> internal debugging -> stop on first error
 	examples:
-	$0 (-c) (-r) (-d) (-R) package /opt/catkin_ws/src/[package dir] [command]
-	$0 (-c) (-r) (-d) (-R) workspace /opt/catkin_ws [command]
+	$0 (-c) (-r) (-d) (-b) package /opt/catkin_ws/src/[package dir] [command]
+	$0 (-c) (-r) (-d) (-b) workspace /opt/catkin_ws [command]
 	EOF
 } # End of usage()
 
@@ -116,10 +131,11 @@ read_input() {
 
 	while [ $# -gt 0 ]; do
 		case "$1" in
-			-h|--help)		usage;				exit 1; ;;
+			-h|--help)		usage;				exit 0; ;;
+			-i|--install)	TARGET=install;		shift; ;;
 			-c|--clean)		FLAVOUR=CLEAN;		shift; ;;
 			-r|--rosdep)	ROSDEP=ROSDEP;		shift; ;;
-			-R|--rebuild)	FORCE_REBUILD=TRUE; shift; ;;
+			-b|--rebuild)	FORCE_REBUILD=TRUE; shift; ;;
 			-d|--dryrun)	DRYRUN=TRUE;		shift; ;;
 			-D|--debug)		DEBUG=TRUE; set -e;	shift; ;;
 			package)		TARGET=PACKAGE;		shift; ;;
@@ -129,15 +145,17 @@ read_input() {
 				if [ -d $1 ]; then
 					LPATH=$(realpath $1)
 				elif [ ! -z ${TARGET+x} ] && [ ! -z ${LPATH} ]; then
-					CMD="$*"
-					break;
+					CMD="$*"; break;
 				else
-					usage
-					exit 1
+					usage; exit 1
 				fi
+
 			shift; ;;
 		esac
 	done
+
+	# catch install target
+	[[ "$TARGET" == "install" ]] && { install; exit 0; }
 
 	# these values must be set
 	assert '[ ! -z ${LPATH+x} ] && [ -d ${LPATH} ]' $LINENO : "No path specified!"

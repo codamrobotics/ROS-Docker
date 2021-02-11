@@ -15,10 +15,10 @@ set -e
 
 ./ros-docker.sh -d package /tmp "catkin_make"
 ./ros-docker.sh -d -r package /tmp "catkin_make"
-./ros-docker.sh -d -r -R package /tmp "catkin_make"
-./ros-docker.sh -d -r -R -D package /tmp "catkin_make"
+./ros-docker.sh -d -r -b package /tmp "catkin_make"
+./ros-docker.sh -d -r -b -D package /tmp "catkin_make"
 
 ./ros-docker.sh -d -c package /tmp "catkin_make"
 ./ros-docker.sh -d -c -r package /tmp "catkin_make"
-./ros-docker.sh -d -c -r -R package /tmp "catkin_make"
-./ros-docker.sh -d -c -r -R -D package /tmp "catkin_make"
+./ros-docker.sh -d -c -r -b package /tmp "catkin_make"
+./ros-docker.sh -d -c -r -b -D package /tmp "catkin_make"

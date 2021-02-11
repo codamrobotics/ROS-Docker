@@ -15,10 +15,10 @@ set -e
 
 ./ros-docker.sh -d workspace /tmp "catkin_make"
 ./ros-docker.sh -d -r workspace /tmp "catkin_make"
-./ros-docker.sh -d -r -R workspace /tmp "catkin_make"
-./ros-docker.sh -d -r -R -D workspace /tmp "catkin_make"
+./ros-docker.sh -d -r -b workspace /tmp "catkin_make"
+./ros-docker.sh -d -r -b -D workspace /tmp "catkin_make"
 
 ./ros-docker.sh -d -c workspace /tmp "catkin_make"
 ./ros-docker.sh -d -c -r workspace /tmp "catkin_make"
-./ros-docker.sh -d -c -r -R workspace /tmp "catkin_make"
-./ros-docker.sh -d -c -r -R -D workspace /tmp "catkin_make"
+./ros-docker.sh -d -c -r -b workspace /tmp "catkin_make"
+./ros-docker.sh -d -c -r -b -D workspace /tmp "catkin_make"
