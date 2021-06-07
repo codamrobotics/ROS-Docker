@@ -207,6 +207,11 @@ build() {
 	local _op="docker build $BASEDIR -t $IMAGE:$IMAGE_VERSION"
 	if [ -z ${DRYRUN+x} ]; then
 		if [ ! -z ${FORCE_REBUILD} ] || [[ "$(docker images -q $IMAGE:$IMAGE_VERSION 2>/dev/null)" == "" ]]; then
+            if [[ ! "$(docker images -q ros:noetic-ros-core 2> /dev/null)" == "" ]]; then
+                # TODO: HARCODED for noetic
+			    notify $LINENO: "Image ros:noetic-ros-core already exists. Trying to pull latest.."
+                docker pull ros:noetic-ros-core
+            fi
 			eval "$_op" || exit 1
 		else
 			notify $LINENO: "Image $IMAGE:$IMAGE_VERSION already exists. Continuing.."
