@@ -27,7 +27,6 @@ RUN apt-get update && apt-get install -q -y --no-install-recommends \
 	git \
 	vim \
 	ranger \
-	openssh-server \
     && rm -rf /var/lib/apt/lists/*
 
 # install ros packages
