@@ -201,15 +201,20 @@ build() {
 	
 	assert '[ ! -z ${project+x} ]' $LINENO
 	IMAGE=ros-docker-$project
-	IMAGE_VERSION=0.1
+	IMAGE_TAG=0.1
 
-	echo "Docker building image \"$IMAGE:$IMAGE_VERSION\"..."
-	local _op="docker build $BASEDIR -t $IMAGE:$IMAGE_VERSION"
+	echo "Docker building image \"$IMAGE:$IMAGE_TAG\"..."
+	local _op="docker build $BASEDIR -t $IMAGE:$IMAGE_TAG"
 	if [ -z ${DRYRUN+x} ]; then
-		if [ ! -z ${FORCE_REBUILD} ] || [[ "$(docker images -q $IMAGE:$IMAGE_VERSION 2>/dev/null)" == "" ]]; then
+		if [ ! -z ${FORCE_REBUILD} ] || [[ "$(docker images -q $IMAGE:$IMAGE_TAG 2>/dev/null)" == "" ]]; then
+            if [[ ! "$(docker images -q ros:noetic-ros-core 2> /dev/null)" == "" ]]; then
+                # TODO: HARCODED for noetic
+			    notify $LINENO: "Image ros:noetic-ros-core already exists. Trying to pull latest.."
+                docker pull ros:noetic-ros-core
+            fi
 			eval "$_op" || exit 1
 		else
-			notify $LINENO: "Image $IMAGE:$IMAGE_VERSION already exists. Continuing.."
+			notify $LINENO: "Image $IMAGE:$IMAGE_TAG already exists. Continuing.."
 		fi
 	else
 		dryrun $LINENO: "$_op"
@@ -234,18 +239,19 @@ run() {
 	assert '[ ! -z ${LPATH+x} ]' $LINENO
 	assert '[ ! -z ${RPATH+x} ]' $LINENO
 	assert '[ ! -z ${IMAGE+x} ]' $LINENO
-	assert '[ ! -z ${IMAGE_VERSION+x} ]' $LINENO
+	assert '[ ! -z ${IMAGE_TAG+x} ]' $LINENO
 	assert '[ ! -z ${CMD+x} ]' $LINENO "No command specified -> Try appending 'bash' as argument."
 	assert '[ ! -z ${ROSDEP+x} ]' $LINENO
 
-	echo "Docker shadowing image \"$IMAGE:$IMAGE_VERSION\"..."
+	echo "Docker shadowing image \"$IMAGE:$IMAGE_TAG\"..."
 	#if [[ $- == *i* ]]; then
 	if [ -t 0 ]; then
 		# running interactively
-		local _op="docker run -it --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_VERSION $ROSDEP sh -c $CMD"
+		local _op="docker run -it --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_TAG $ROSDEP sh -c $CMD"
 	else
 		# running headless
-		local _op="docker run --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_VERSION $ROSDEP sh -c $CMD"
+Related JIRA tickets or pull requests.
+		local _op="docker run --rm --init -v "$LPATH:$RPATH" $IMAGE:$IMAGE_TAG $ROSDEP sh -c $CMD"
 	fi
 
 	if [ -z ${DRYRUN+x} ]; then
